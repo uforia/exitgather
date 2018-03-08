@@ -4,14 +4,24 @@
 
 URLLIST={
 	'TOR':{'URL':'https://check.torproject.org/exit-addresses','Type':'TOR','Format':'TOR'},
+	'IPVanish':{'URL':'https://www.ipvanish.com/software/configs/configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'NordVPN':{'URL':'https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'PureVPN':{'URL':'https://s3-us-west-1.amazonaws.com/heartbleed/linux/linux-files.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'PrivateInternetAccessVPNIP':{'URL':'https://www.privateinternetaccess.com/openvpn/openvpn-ip.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'PrivateInternetAccessVPNTCP':{'URL':'https://www.privateinternetaccess.com/openvpn/openvpn-tcp.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'TunnelbearVPN':{'URL':'https://s3.amazonaws.com/tunnelbear/linux/openvpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'TorGuardVPNUDP':{'URL':'https://torguard.net/downloads/OpenVPN-UDP.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'TorGuardVPNTCP':{'URL':'https://torguard.net/downloads/OpenVPN-TCP.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'HideMyAssVPN':{'URL':'http://hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'}
 }
-#	'IPVanish':{'URL':'https://www.ipvanish.com/software/configs/configs.zip','Type':'OpenVPN','Format':'ZIP'},
-#	'NordVPN':{'URL':'https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip','Type':'OpenVPN','Format':'ZIP'}
-#}
+
+import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket
+
 DLDIR='download'
 OUTPUTDIR='output'
-
-import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time
+IPV4_ADDRESS=re.compile('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+IPV6_ADDRESS=re.compile('(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))')
+OpenVPN_ADDRESS=re.compile('(remote .* ([0-9]{1,5}))',re.IGNORECASE)
 
 ### Python 2/3 compatibility
 try:
@@ -21,7 +31,7 @@ except ImportError:
 
 def download(options,urls):
 	for key in urls:
-		sourceurl,sourcetype,sourceformat,destination=urls[key]['URL'],urls[key]['Type'],urls[key]['Format'],key+'-'+os.path.basename(urls[key]['URL'])
+		sourceurl,sourcetype,sourceformat,destdir,destfile=urls[key]['URL'],urls[key]['Type'],urls[key]['Format'],DLDIR+'/'+key+'/',key+'-'+os.path.basename(urls[key]['URL'])
 		if options.verbose:
 			print("U) Downloading "+sourceurl)
 		try:
@@ -34,22 +44,25 @@ def download(options,urls):
 			print("E) An error occurred downloading "+sourceurl)
 			continue
 		try:
-			with open(DLDIR+'/'+destination,'wb') as f:
+			if not os.path.exists(destdir):
+				os.makedirs(destdir)
+			with open(destdir+destfile,'wb') as f:
 				f.write(response.read())
 		except IOError:
 			print("E) An error occurred writing "+sourceurl+" to disk!")
 		except KeyboardInterrupt:
 			print("E) CTRL-C pressed, stopping!")
 			sys.exit(1)
-		if os.path.splitext(destination)[1].lower()=='.zip':
+		if os.path.splitext(destfile)[1].lower()=='.zip':
 			try:
-				with zipfile.ZipFile(DLDIR+'/'+destination,'r') as z:
+				with zipfile.ZipFile(destdir+destfile,'r') as z:
 					if sourcetype=='OpenVPN':
 						ovpnconfigs=[file for file in z.namelist() if file.lower().endswith('.ovpn')]
-						z.extractall(DLDIR,ovpnconfigs)
-				os.unlink(DLDIR+'/'+destination)
+						z.extractall(destdir,ovpnconfigs)
+				os.unlink(destdir+destfile)
 			except IOError:
-				print("E) An error occurred unzipping "+sourceurl+"!")
+				raise
+				print("E) An error occurred unzipping "+destdir+destfile+"!")
 			except KeyboardInterrupt:
 				print("E) CTRL-C pressed, stopping!")
 				continue
@@ -59,18 +72,20 @@ def download(options,urls):
 def generate(options,urls):
 	for key in urls:
 		sourceurl,sourcetype,sourceformat=urls[key]['URL'],urls[key]['Type'],urls[key]['Format']
-		destination=time.strftime("%Y-%m-%dT%H-%M-%S",time.gmtime())+'-'+sourcetype+'-exit-nodes.csv'
+		destfile=OUTPUTDIR+'/'+time.strftime("%Y-%m-%dT%H-%M-%S",time.gmtime())+'-'+sourcetype+'-exit-nodes.csv'
 		if sourcetype=='TOR' and sourceformat=='TOR':
-			sourcefile=key+'-'+os.path.basename(urls[key]['URL'])
+			if options.verbose:
+				print("U) Generating list of "+key+" exit node IPs...")
+			sourcefile=DLDIR+'/'+key+'/'+key+'-'+os.path.basename(urls[key]['URL'])
 			try:
-				with open(DLDIR+'/'+sourcefile,'r') as f:
+				with open(sourcefile,'r') as f:
 					exitnodelist=f.read().split("ExitNode ")
 			except IOError:
 				if options.verbose:
-					print("E) An error occurred opening "+destination+"!")
+					print("E) An error occurred opening "+sourcefile+"!")
 				sys.exit(1)
 			try:
-				f=open(OUTPUTDIR+'/'+destination,'w')
+				f=open(destfile,'w+')
 				f.write('"ExitNode","IPAddress","Published","Last Seen","Status","Comment"\n')
 				for raw_entry in exitnodelist:
 					entry=raw_entry.split('\n')
@@ -88,10 +103,51 @@ def generate(options,urls):
 							exitaddress,exitaddresstimestamp=entry[3].split(' ')[1],entry[3].split(' ')[2]+'T'+entry[3].split(' ')[3]+'Z'
 							f.write('"'+exitnode+'","'+exitaddress+'","'+publishedtimestamp+'","'+laststatustimestamp+'","'+status+'","'+comment+'"\n')
 			except:
-				raise
 				if options.verbose:
-					print("An error occurred parsing the contents")
+					print("An error occurred parsing the contents of "+sourcefile)
 				f.close()
+		if sourcetype=='OpenVPN' and sourceformat=='OpenVPN':
+			if options.verbose:
+				print("U) Generating list of "+key+" exit node IPs. This may be slow if this VPN provider uses hostnames in their configs!")
+			matches=[]
+			sourcedir=DLDIR+'/'+key
+			try:
+				g=open(destfile,'w+')
+				g.write('"Provider","IPAddress","Port","Comment"\n')
+			except IOError:
+				if options.verbose:
+					print("E) Error opening output file "+destfile+"!")
+					continue
+			try:
+				for root,dirnames,filenames in os.walk(sourcedir):
+					for filename in fnmatch.filter(filenames,'*.ovpn'):
+						matches.append(os.path.join(root,filename))
+			except IOError:
+				if options.verbose:
+					print("E) An error occurred parsing the OpenVPN files for "+key)
+				continue
+			for filename in matches:
+				comment=''
+				try:
+					with open(filename,'r') as f:
+						for line in f.readlines():
+							exitnodes=OpenVPN_ADDRESS.finditer(line)
+							for remoteline in [line.group(0) for line in exitnodes]:
+								exitnodeentry,exitnodeport=remoteline.split(' ')[1],remoteline.split(' ')[2]
+								if not IPV4_ADDRESS.match(exitnodeentry) and not IPV6_ADDRESS.match(exitnodeentry):
+									try:
+										exitnodeip=socket.gethostbyname(exitnodeentry)
+									except socket.error:
+										if options.verbose:
+											print("E) Could not resolve "+exitnodeentry+"!")
+											exitnodeip='Host '+exitnodeentry+' not found: 3(NXDOMAIN)'
+								else:
+									exitnodeip=exitnodeentry
+				except IOError:
+					if options.verbose:
+						print("E) An error reading or finding the IP in "+filename+"! Is this an OpenVPN config file?")
+						continue
+				g.write('"'+key+'","'+exitnodeip+'","'+exitnodeport+'","'+comment+'"\n')
 
 if __name__=="__main__":
 	cli=optparse.OptionParser(usage="usage: %prog [-q]")
