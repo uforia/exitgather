@@ -15,7 +15,7 @@ URLLIST={
 	'HideMyAssVPN':{'URL':'http://hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'}
 }
 
-import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket
+import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket,urllib2
 
 DLDIR='download'
 OUTPUTDIR='output'
@@ -23,19 +23,15 @@ IPV4_ADDRESS=re.compile('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
 IPV6_ADDRESS=re.compile('(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))')
 OpenVPN_ADDRESS=re.compile('(remote .* ([0-9]{1,5}))',re.IGNORECASE)
 
-### Python 2/3 compatibility
-try:
-	from urllib.request import urlopen
-except ImportError:
-	from urllib2 import urlopen
-
 def download(options,urls):
 	for key in urls:
 		sourceurl,sourcetype,sourceformat,destdir,destfile=urls[key]['URL'],urls[key]['Type'],urls[key]['Format'],DLDIR+'/'+key+'/',key+'-'+os.path.basename(urls[key]['URL'])
 		if options.verbose:
 			print("U) Downloading "+sourceurl)
 		try:
-			response=urlopen(sourceurl,None,15)
+			request=urllib2.Request(sourceurl)
+			request.add_header(('User-Agent'),('Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0'))
+			opener=urllib2.build_opener()
 		except KeyboardInterrupt:
 			print("E) CTRL-C pressed, stopping!")
 			sys.exit(1)
@@ -47,7 +43,7 @@ def download(options,urls):
 			if not os.path.exists(destdir):
 				os.makedirs(destdir)
 			with open(destdir+destfile,'wb') as f:
-				f.write(response.read())
+				f.write(opener.open(request).read())
 		except IOError:
 			print("E) An error occurred writing "+sourceurl+" to disk!")
 		except KeyboardInterrupt:
@@ -72,8 +68,8 @@ def download(options,urls):
 def generate(options,urls):
 	for key in urls:
 		sourceurl,sourcetype,sourceformat=urls[key]['URL'],urls[key]['Type'],urls[key]['Format']
-		destfile=OUTPUTDIR+'/'+time.strftime("%Y-%m-%dT%H-%M-%S",time.gmtime())+'-'+sourcetype+'-exit-nodes.csv'
 		if sourcetype=='TOR' and sourceformat=='TOR':
+			destfile=OUTPUTDIR+'/'+time.strftime("%Y-%m-%dT%H-%M-%S",time.gmtime())+'-'+sourcetype+'-exit-nodes.csv'
 			if options.verbose:
 				print("U) Generating list of "+key+" exit node IPs...")
 			sourcefile=DLDIR+'/'+key+'/'+key+'-'+os.path.basename(urls[key]['URL'])
@@ -107,6 +103,7 @@ def generate(options,urls):
 					print("An error occurred parsing the contents of "+sourcefile)
 				f.close()
 		if sourcetype=='OpenVPN' and sourceformat=='OpenVPN':
+			destfile=OUTPUTDIR+'/'+time.strftime("%Y-%m-%dT%H-%M-%S",time.gmtime())+'-'+key+'-exit-nodes.csv'
 			if options.verbose:
 				print("U) Generating list of "+key+" exit node IPs. This may be slow if this VPN provider uses hostnames in their configs!")
 			matches=[]
