@@ -12,10 +12,11 @@ URLLIST={
 	'TunnelbearVPN':{'URL':'https://s3.amazonaws.com/tunnelbear/linux/openvpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'TorGuardVPNUDP':{'URL':'https://torguard.net/downloads/OpenVPN-UDP.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'TorGuardVPNTCP':{'URL':'https://torguard.net/downloads/OpenVPN-TCP.zip','Type':'OpenVPN','Format':'OpenVPN'},
-	'HideMyAssVPN':{'URL':'http://hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'}
+	'HideMyAssVPN':{'URL':'http://hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'VyprVPN':{'URL':'https://support.goldenfrog.com/hc/en-us/articles/203733723-What-are-the-VyprVPN-server-addresses','Type':'PPTP-L2TP','Format':'HTML'}
 }
 
-import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket,urllib2
+import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket,urllib2,itertools
 
 DLDIR='download'
 OUTPUTDIR='output'
@@ -110,7 +111,7 @@ def generate(options,urls):
 			sourcedir=DLDIR+'/'+key
 			try:
 				g=open(destfile,'w+')
-				g.write('"Provider","IPAddress","Port","Comment"\n')
+				g.write('"Provider","IPAddress","Ports","Comment"\n')
 			except IOError:
 				if options.verbose:
 					print("E) Error opening output file "+destfile+"!")
@@ -142,9 +143,34 @@ def generate(options,urls):
 									exitnodeip=exitnodeentry
 				except IOError:
 					if options.verbose:
-						print("E) An error reading or finding the IP in "+filename+"! Is this an OpenVPN config file?")
+						print("E) An error occurred reading or finding the IP in "+filename+"! Is this an OpenVPN config file?")
 						continue
 				g.write('"'+key+'","'+exitnodeip+'","'+exitnodeport+'","'+comment+'"\n')
+		if sourcetype=='PPTP-L2TP' and sourceformat=='HTML':
+			destfile=OUTPUTDIR+'/'+time.strftime("%Y-%m-%dT%H-%M-%S",time.gmtime())+'-'+key+'-exit-nodes.csv'
+			if options.verbose:
+				print("U) Generating list of "+key+" exit node IPs. This may be slow if this VPN provider uses hostnames on their webpages!")
+			matches=[]
+			sourcefile=DLDIR+'/'+key+'/'+key+'-'+os.path.basename(urls[key]['URL'])
+			sourcedir=DLDIR+'/'+key
+			try:
+				g=open(destfile,'w+')
+				g.write('"Provider","IPAddress","Ports","Comment"\n')
+			except IOError:
+				if options.verbose:
+					print("E) Error opening output file "+destfile+"!")
+					continue
+			try:
+				with open(sourcefile,'r') as f:
+					for line in f.readlines():
+						exitnodesv4=IPV4_ADDRESS.finditer(line)
+						exitnodesv6=IPV6_ADDRESS.finditer(line)
+						for exitnodeip in [line.group(0) for line in itertools.chain(exitnodesv4,exitnodesv6)]:
+							g.write('"'+key+'","'+exitnodeip+'","500,1723,4500","PPTP, L2TP, IPSEC tunneling"\n')
+			except IOError:
+				if options.verbose:
+					print("E) An error occurred reading "+filename+"!")
+					continue
 
 if __name__=="__main__":
 	cli=optparse.OptionParser(usage="usage: %prog [-q]")
