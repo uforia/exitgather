@@ -174,7 +174,25 @@ def generate(options,urls):
 
 if __name__=="__main__":
 	cli=optparse.OptionParser(usage="usage: %prog [-q]")
-	cli.add_option('-q','--quiet',dest='verbose',action='store_false',default=True,help='[optional] Do not print progress, errors')
+	cli.add_option('-q','--quiet',dest='verbose',action='store_false',default=True,help='[optional] Disable progress/error info (default: enabled)')
 	(options,args)=cli.parse_args()
+	try:
+		if not os.path.exists(DLDIR):
+			if options.verbose:
+				print("U) Creating download directory...")
+			os.makedirs(DLDIR)
+	except:
+		if options.verbose:
+			print("U) An error occured creating the download directory, exiting!")
+			sys.exit(1)
+	try:
+		if not os.path.exists(OUTPUTDIR):
+			if options.verbose:
+				print("U) Creating output directory...")
+			os.makedirs(OUTPUTDIR)
+	except:
+		if options.verbose:
+			print("U) An error occured creating the output directory, exiting!")
+			sys.exit(1)
 	download(options,URLLIST)
 	generate(options,URLLIST)
