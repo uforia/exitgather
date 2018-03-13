@@ -12,7 +12,7 @@ URLLIST={
 	'TunnelbearVPN':{'URL':'https://s3.amazonaws.com/tunnelbear/linux/openvpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'TorGuardVPNUDP':{'URL':'https://torguard.net/downloads/OpenVPN-UDP.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'TorGuardVPNTCP':{'URL':'https://torguard.net/downloads/OpenVPN-TCP.zip','Type':'OpenVPN','Format':'OpenVPN'},
-	'HideMyAssVPN':{'URL':'http://hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'HideMyAssVPN':{'URL':'https://vpn.hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'VyprVPN':{'URL':'https://support.goldenfrog.com/hc/en-us/articles/203733723-What-are-the-VyprVPN-server-addresses','Type':'PPTP-L2TP','Format':'HTML'}
 }
 
