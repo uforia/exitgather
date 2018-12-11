@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 ### (c) 2018 Arnim Eijkhoudt <arnime _squigglything_ kpn-cert.nl>, GPLv2 licensed except where otherwise indicated.
 
@@ -13,7 +13,7 @@ URLLIST={
 	'TorGuardVPNUDP':{'URL':'https://torguard.net/downloads/OpenVPN-UDP.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'TorGuardVPNTCP':{'URL':'https://torguard.net/downloads/OpenVPN-TCP.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'HideMyAssVPN':{'URL':'https://vpn.hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
-	'VyprVPN':{'URL':'https://support.goldenfrog.com/hc/en-us/articles/203733723-What-are-the-VyprVPN-server-addresses','Type':'PPTP-L2TP','Format':'HTML'}
+	'VyprVPN':{'URL':'https://support.goldenfrog.com/hc/en-us/articles/360011055671-What-are-the-VyprVPN-server-addresses-','Type':'PPTP-L2TP','Format':'HTML'}
 }
 
 import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket,urllib2,itertools
