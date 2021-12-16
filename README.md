@@ -6,7 +6,7 @@ ExitGather is a Python script to generate a list of IP addresses being used as T
   
 # Requirements  
   
-1) Python 2.7.x
+1) Python 3.x
 2) [required] Python DateUtil: https://pypi.python.org/pypi/python-dateutil/
 3) A working internet connection
   
