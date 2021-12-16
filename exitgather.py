@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 ### (c) 2018 Arnim Eijkhoudt <arnime _squigglything_ kpn-cert.nl>, GPLv2 licensed except where otherwise indicated.
 
@@ -16,7 +16,8 @@ URLLIST={
 	'VyprVPN':{'URL':'https://support.goldenfrog.com/hc/en-us/articles/360011055671-What-are-the-VyprVPN-server-addresses-','Type':'PPTP-L2TP','Format':'HTML'}
 }
 
-import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket,urllib2,itertools
+import sys,re,optparse,os,dateutil.parser,zipfile,fnmatch,time,socket,itertools
+import urllib.request
 
 DLDIR='download'
 OUTPUTDIR='output'
@@ -30,9 +31,9 @@ def download(options,urls):
 		if options.verbose:
 			print("U) Downloading "+sourceurl)
 		try:
-			request=urllib2.Request(sourceurl)
+			request=urllib.request.Request(sourceurl)
 			request.add_header(('User-Agent'),('Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0'))
-			opener=urllib2.build_opener()
+			opener=urllib.request.build_opener()
 		except KeyboardInterrupt:
 			print("E) CTRL-C pressed, stopping!")
 			sys.exit(1)
@@ -127,7 +128,7 @@ def generate(options,urls):
 			for filename in matches:
 				comment=''
 				try:
-					with open(filename,'r') as f:
+					with open(filename,'r', encoding='utf-8', errors='replace') as f:
 						for line in f.readlines():
 							exitnodes=OpenVPN_ADDRESS.finditer(line)
 							for remoteline in [line.group(0) for line in exitnodes]:
@@ -161,7 +162,7 @@ def generate(options,urls):
 					print("E) Error opening output file "+destfile+"!")
 					continue
 			try:
-				with open(sourcefile,'r') as f:
+				with open(sourcefile,'r', encoding='utf-8', errors='replace') as f:
 					for line in f.readlines():
 						exitnodesv4=IPV4_ADDRESS.finditer(line)
 						exitnodesv6=IPV6_ADDRESS.finditer(line)
