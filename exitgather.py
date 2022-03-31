@@ -2,62 +2,18 @@
 
 ### (c) 2018 Arnim Eijkhoudt <arnime _squigglything_ kpn-cert.nl>, GPLv2 licensed except where otherwise indicated.
 
-URLLIST = {
-    'TOR': {
-        'URL': 'https://check.torproject.org/exit-addresses',
-        'Type': 'TOR',
-        'Format': 'TOR',
-    },
-    'IPVanish': {
-        'URL': 'https://www.ipvanish.com/software/configs/configs.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'NordVPN': {
-        'URL': 'https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'PureVPN': {
-        'URL': 'https://d32d3g1fvkpl8y.cloudfront.net/heartbleed/windows/New+OVPN+Files.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'PrivateInternetAccessVPNIP': {
-        'URL': 'https://www.privateinternetaccess.com/openvpn/openvpn-ip.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'PrivateInternetAccessVPNTCP': {
-        'URL': 'https://www.privateinternetaccess.com/openvpn/openvpn-tcp.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'TunnelbearVPN': {
-        'URL': 'https://s3.amazonaws.com/tunnelbear/linux/openvpn.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'TorGuardVPNUDP': {
-        'URL': 'https://torguard.net/downloads/OpenVPN-UDP.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'TorGuardVPNTCP': {
-        'URL': 'https://torguard.net/downloads/OpenVPN-TCP.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'HideMyAssVPN': {
-        'URL': 'https://vpn.hidemyass.com/vpn-config/vpn-configs.zip',
-        'Type': 'OpenVPN',
-        'Format': 'OpenVPN',
-    },
-    'VyprVPN': {
-        'URL': 'https://support.goldenfrog.com/hc/en-us/articles/360011055671-What-are-the-VyprVPN-server-addresses-',
-        'Type': 'PPTP-L2TP',
-        'Format': 'HTML',
-    },
+URLLIST={
+	'TOR':{'URL':'https://check.torproject.org/exit-addresses','Type':'TOR','Format':'TOR'},
+	'IPVanish':{'URL':'https://www.ipvanish.com/software/configs/configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'NordVPN':{'URL':'https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'PureVPN':{'URL':'https://s3-us-west-1.amazonaws.com/heartbleed/linux/linux-files.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'PrivateInternetAccessVPNIP':{'URL':'https://www.privateinternetaccess.com/openvpn/openvpn-ip.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'PrivateInternetAccessVPNTCP':{'URL':'https://www.privateinternetaccess.com/openvpn/openvpn-tcp.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'TunnelbearVPN':{'URL':'https://s3.amazonaws.com/tunnelbear/linux/openvpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'TorGuardVPNUDP':{'URL':'https://torguard.net/downloads/OpenVPN-UDP.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'TorGuardVPNTCP':{'URL':'https://torguard.net/downloads/OpenVPN-TCP.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'HideMyAssVPN':{'URL':'https://vpn.hidemyass.com/vpn-config/vpn-configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'VyprVPN':{'URL':'https://support.goldenfrog.com/hc/en-us/articles/360011055671-What-are-the-VyprVPN-server-addresses-','Type':'PPTP-L2TP','Format':'HTML'}
 }
 
 import sys, re, optparse, os, dateutil.parser, zipfile, fnmatch, time, socket, itertools
