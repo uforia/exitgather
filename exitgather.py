@@ -4,7 +4,7 @@
 
 URLLIST={
 	'TOR':{'URL':'https://check.torproject.org/exit-addresses','Type':'TOR','Format':'TOR'},
-	'IPVanish':{'URL':'https://www.ipvanish.com/software/configs/configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
+	'IPVanish':{'URL':'https://configs.ipvanish.com/configs/configs.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'NordVPN':{'URL':'https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'PureVPN':{'URL':'https://d32d3g1fvkpl8y.cloudfront.net/heartbleed/windows/New+OVPN+Files.zip','Type':'OpenVPN','Format':'OpenVPN'},
 	'PrivateInternetAccessVPNIP':{'URL':'https://www.privateinternetaccess.com/openvpn/openvpn-ip.zip','Type':'OpenVPN','Format':'OpenVPN'},
